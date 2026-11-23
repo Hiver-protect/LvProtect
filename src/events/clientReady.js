@@ -21,6 +21,12 @@ module.exports = {
         const STORAGE_FILE = path.join(process.cwd(), "status_storage.json");
         const log = (m) => console.log(`[📊 DASHBOARD] ${m}`);
 
+        // Présence Discord
+        client.user.setPresence({
+            activities: [{ name: `/help • LvProtect Sécurité`, type: ActivityType.Watching }],
+            status: 'online'
+        });
+
         // =========================
         // 🚀 AUTO-DEPLOY SLASH COMMANDS
         // =========================

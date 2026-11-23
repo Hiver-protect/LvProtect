@@ -9,7 +9,7 @@ const { getConfig, setConfig } = require('../modules/guildConfig');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('config')
-        .setDescription('⚙️ Configuration complète de HiverGuard')
+        .setDescription('⚙️ Configuration complète de HiverGuard / LvProtect')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         
         // Option : Logs
@@ -28,6 +28,16 @@ module.exports = {
         .addRoleOption(opt =>
             opt.setName('verified_role')
                 .setDescription('Rôle attribué après vérification'))
+
+        // Option : Anti-Pub (Liens)
+        .addBooleanOption(opt =>
+            opt.setName('anti_link')
+                .setDescription('Activer ou désactiver l\'anti-pub (liens d\'invitations)'))
+
+        // Option : Anti-Spam
+        .addBooleanOption(opt =>
+            opt.setName('anti_spam')
+                .setDescription('Activer ou désactiver le filtre anti-spam'))
         
         // Option : Reset
         .addBooleanOption(opt =>
@@ -51,6 +61,7 @@ module.exports = {
                             .setColor('#ff5555')
                             .setTitle("🗑️ Configuration Réinitialisée")
                             .setDescription("Tous les paramètres de HiverGuard ont été effacés pour ce serveur.")
+                            .setTimestamp()
                     ],
                     ephemeral: true
                 });
@@ -60,35 +71,48 @@ module.exports = {
             const logChannel = options.getChannel('log_channel');
             const ticketCategory = options.getChannel('ticket_category');
             const verifiedRole = options.getRole('verified_role');
+            const antiLink = options.getBoolean('anti_link');
+            const antiSpam = options.getBoolean('anti_spam');
 
             const updatedFields = [];
 
             // 3. MISE À JOUR DES DONNÉES
             if (logChannel) {
                 config.logChannel = logChannel.id;
-                updatedFields.push(`🔹 **Logs:** <#${logChannel.id}>`);
+                updatedFields.push(`🔹 **Logs :** <#${logChannel.id}>`);
             }
             if (ticketCategory) {
                 config.ticketCategory = ticketCategory.id;
-                updatedFields.push(`🔹 **Tickets:** 📁 ${ticketCategory.name}`);
+                updatedFields.push(`🔹 **Tickets :** 📁 ${ticketCategory.name}`);
             }
             if (verifiedRole) {
                 config.verifiedRole = verifiedRole.id;
-                updatedFields.push(`🔹 **Rôle:** <@&${verifiedRole.id}>`);
+                updatedFields.push(`🔹 **Rôle vérifié :** <@&${verifiedRole.id}>`);
+            }
+            if (antiLink !== null) {
+                config.antiLink = antiLink;
+                updatedFields.push(`🔹 **Anti-Pub :** ${antiLink ? '✅ Activé' : '❌ Désactivé'}`);
+            }
+            if (antiSpam !== null) {
+                config.antiSpam = antiSpam;
+                updatedFields.push(`🔹 **Anti-Spam :** ${antiSpam ? '✅ Activé' : '❌ Désactivé'}`);
             }
 
             // 4. SI AUCUNE OPTION : AFFICHER LA CONFIG ACTUELLE
             if (updatedFields.length === 0) {
                 const currentConfigEmbed = new EmbedBuilder()
                     .setColor('#5865F2')
-                    .setTitle(`📊 Configuration actuelle - ${guild.name}`)
-                    .setThumbnail(guild.iconURL())
+                    .setTitle(`📊 Configuration de ${guild.name}`)
+                    .setThumbnail(guild.iconURL({ dynamic: true }))
                     .addFields(
                         { name: '📜 Salon Logs', value: config.logChannel ? `<#${config.logChannel}>` : '❌ Non configuré', inline: true },
-                        { name: '🎫 Catégorie Tickets', value: config.ticketCategory ? `📁 <#${config.ticketCategory}>` : '❌ Non configuré', inline: true },
-                        { name: '✅ Rôle Vérifié', value: config.verifiedRole ? `<@&${config.verifiedRole}>` : '❌ Non configuré', inline: true }
+                        { name: '🎫 Catégorie Tickets', value: config.ticketCategory ? `<#${config.ticketCategory}>` : '❌ Non configuré', inline: true },
+                        { name: '✅ Rôle Vérifié', value: config.verifiedRole ? `<@&${config.verifiedRole}>` : '❌ Non configuré', inline: true },
+                        { name: '🔗 Anti-Pub', value: config.antiLink !== false ? '✅ Activé' : '❌ Désactivé', inline: true },
+                        { name: '💬 Anti-Spam', value: config.antiSpam !== false ? '✅ Activé' : '❌ Désactivé', inline: true }
                     )
-                    .setFooter({ text: "Utilise les options de la commande pour modifier ces valeurs." });
+                    .setFooter({ text: "Utilise les options de la commande pour modifier ces paramètres." })
+                    .setTimestamp();
 
                 return interaction.reply({ embeds: [currentConfigEmbed], ephemeral: true });
             }
@@ -98,25 +122,20 @@ module.exports = {
 
             // 5. EMBED DE CONFIRMATION
             const successEmbed = new EmbedBuilder()
-                .setColor('#2ecc71')
-                .setTitle("✅ Configuration mise à jour")
-                .setDescription(`Les paramètres suivants ont été modifiés avec succès :\n\n${updatedFields.join('\n')}`)
-                .setTimestamp()
-                .setFooter({ text: `Configuré par ${interaction.user.tag}` });
+                .setColor(0x2ecc71)
+                .setTitle("✅ Configuration Mise à Jour")
+                .setDescription(updatedFields.join('\n'))
+                .setFooter({ text: "Paramètres sauvegardés avec succès" })
+                .setTimestamp();
 
+            return interaction.reply({ embeds: [successEmbed], ephemeral: true });
+
+        } catch (error) {
+            console.error("Erreur commande config:", error);
             return interaction.reply({
-                embeds: [successEmbed],
+                content: "❌ Une erreur est survenue lors de la configuration.",
                 ephemeral: true
             });
-
-        } catch (err) {
-            console.error("❌ Error in /config:", err);
-            const errorEmbed = new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle("🚨 Erreur Système")
-                .setDescription("Une erreur interne est survenue lors de l'enregistrement de la configuration.");
-
-            return interaction.reply({ embeds: [errorEmbed], ephemeral: true }).catch(() => {});
         }
     }
 };

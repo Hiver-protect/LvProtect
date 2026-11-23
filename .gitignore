@@ -16,3 +16,7 @@ Thumbs.db
 # bot state
 statusMessage.json
 status_storage.json
+deployCache.json
+welcome.json
+data/warns.json
+

@@ -1,188 +1,50 @@
 const { Events, EmbedBuilder } = require('discord.js');
+const antiraid = require('../modules/antiraid');
+const welcomeConfig = require('../modules/welcomeConfig');
 
 module.exports = {
-  name: Events.GuildMemberAdd,
+    name: Events.GuildMemberAdd,
 
-  async execute(member, client) {
+    async execute(member, client) {
+        try {
+            // 1. Analyse Anti-Raid et Anti-Bot
+            await antiraid.handleMemberJoin(member, client);
 
-    try {
+            // 2. Message de bienvenue personnalisé
+            const wConf = welcomeConfig.get(member.guild.id);
+            if (wConf && wConf.channelId) {
+                const wChannel = member.guild.channels.cache.get(wConf.channelId);
+                if (wChannel && wChannel.isTextBased()) {
+                    const welcomeText = (wConf.message || "Bienvenue {user} sur **{server}** ! Nous sommes maintenant {count} membres.")
+                        .replace(/{user}/g, `<@${member.id}>`)
+                        .replace(/{server}/g, member.guild.name)
+                        .replace(/{count}/g, member.guild.memberCount);
 
-      const { getConfig } = require('../modules/guildConfig');
-      const config = getConfig(member.guild.id) || {};
+                    const welcomeEmbed = new EmbedBuilder()
+                        .setColor('#5865F2')
+                        .setTitle(`👋 Bienvenue sur ${member.guild.name} !`)
+                        .setDescription(welcomeText)
+                        .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+                        .setFooter({ text: `Membre #${member.guild.memberCount}` })
+                        .setTimestamp();
 
-      const logChannel = client.channels.cache.get(config.logChannel);
-
-      // =========================
-      // 🧠 INIT CACHE GLOBAL
-      // =========================
-      if (!client.security) {
-        client.security = {
-          joins: new Map(),
-          raidLevel: new Map()
-        };
-      }
-
-      const now = Date.now();
-      const guildId = member.guild.id;
-
-      // =========================
-      // ⏱️ AGE COMPTE
-      // =========================
-      const accountAge = now - member.user.createdTimestamp;
-
-      const minAge = config.minAccountAge || 7 * 24 * 60 * 60 * 1000;
-      const isNewAccount = accountAge < minAge;
-
-      // =========================
-      // 📊 DETECTION RAID TEMPS RÉEL
-      // =========================
-      let joins = client.security.joins.get(guildId) || [];
-
-      joins.push(now);
-
-      // Fenêtre 15 secondes (plus précis)
-      joins = joins.filter(t => now - t < 15000);
-
-      client.security.joins.set(guildId, joins);
-
-      const raidThreshold = config.raidThreshold || 7;
-      const raidDetected = joins.length >= raidThreshold;
-
-      // =========================
-      // 🧠 RISK SCORE (INTELLIGENT)
-      // =========================
-      let risk = 0;
-
-      if (isNewAccount) risk += 40;
-      if (raidDetected) risk += 50;
-      if (member.user.bot) risk += 30;
-
-      // bonus si compte très récent (<1 jour)
-      if (accountAge < 24 * 60 * 60 * 1000) risk += 30;
-
-      // =========================
-      // 🚨 RAID LEVEL SYSTEM
-      // =========================
-      let raidLevel = client.security.raidLevel.get(guildId) || 0;
-
-      if (raidDetected) {
-        raidLevel++;
-      } else {
-        raidLevel = Math.max(raidLevel - 1, 0);
-      }
-
-      client.security.raidLevel.set(guildId, raidLevel);
-
-      // =========================
-      // 🔥 ACTIONS INTELLIGENTES
-      // =========================
-      let action = "Aucune";
-
-      if (risk >= 80) {
-        action = "KICK";
-        await member.kick("🚨 Sécurité anti-raid").catch(() => {});
-      }
-
-      else if (risk >= 50) {
-        action = "TIMEOUT";
-        await member.timeout(10 * 60 * 1000, "⚠️ Compte suspect").catch(() => {});
-      }
-
-      // =========================
-      // 🔒 LOCKDOWN AUTO
-      // =========================
-      if (raidLevel >= 3 && config.lockdownOnRaid) {
-
-        for (const channel of member.guild.channels.cache.values()) {
-
-          if (!channel.permissionOverwrites) continue;
-
-          await channel.permissionOverwrites.edit(member.guild.roles.everyone, {
-            SendMessages: false
-          }).catch(() => {});
-        }
-
-        if (logChannel) {
-          logChannel.send("🚨 **LOCKDOWN AUTO ACTIVÉ (anti-raid)**");
-        }
-      }
-
-      // =========================
-      // 📊 EMBED LOG PRO
-      // =========================
-      if (logChannel) {
-
-        const embed = new EmbedBuilder()
-          .setColor(
-            risk >= 80 ? 0xe74c3c :
-            risk >= 50 ? 0xf1c40f :
-            0x2ecc71
-          )
-
-          .setTitle(
-            risk >= 80 ? "🚨 Menace détectée" :
-            risk >= 50 ? "⚠️ Utilisateur suspect" :
-            "👤 Nouveau membre"
-          )
-
-          .setThumbnail(member.user.displayAvatarURL())
-
-          .addFields(
-            {
-              name: "👤 Utilisateur",
-              value: `${member.user.tag}\nID: ${member.id}`,
-              inline: true
-            },
-            {
-              name: "📅 Compte",
-              value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`,
-              inline: true
-            },
-            {
-              name: "📊 Risk Score",
-              value: `${risk}%`,
-              inline: true
-            },
-            {
-              name: "🚨 Raid",
-              value: `${raidDetected ? "Oui" : "Non"} (${joins.length}/${raidThreshold})`,
-              inline: true
-            },
-            {
-              name: "🔥 Niveau Raid",
-              value: `${raidLevel}`,
-              inline: true
-            },
-            {
-              name: "⚙️ Action",
-              value: action,
-              inline: true
+                    await wChannel.send({ embeds: [welcomeEmbed] }).catch(() => {});
+                }
             }
-          )
 
-          .setFooter({
-            text: "HiverGuard • Security System",
-            iconURL: client.user.displayAvatarURL()
-          })
+            // 3. Déclenchement de la vérification si configurée
+            try {
+                const vEngine = require('../modules/verificationEngine');
+                const vConf = await vEngine.getConfig(member.guild.id);
+                if (vConf && vConf.enabled && vConf.roleId) {
+                    await vEngine.startVerification(member, null);
+                }
+            } catch (vErr) {
+                console.error("Erreur vérification automatique:", vErr.message);
+            }
 
-          .setTimestamp();
-
-        logChannel.send({ embeds: [embed] }).catch(() => {});
-      }
-
-      // =========================
-      // 🤖 VERIFICATION
-      // =========================
-      try {
-        const verification = require('../modules/verification');
-
-        if (verification?.startVerification) {
-          await verification.startVerification(member, client);
+        } catch (err) {
+            console.error("❌ Erreur guildMemberAdd:", err.message);
         }
-      } catch {}
-
-    } catch (err) {
-      console.log("❌ guildMemberAdd error:", err.message);
     }
-  }
 };
