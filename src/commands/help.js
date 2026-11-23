@@ -131,7 +131,8 @@ module.exports = {
                         .setColor(0x2ecc71)
                         .setTitle("⚙️ Configuration & Utilitaires")
                         .addFields(
-                            { name: "`/config`", value: "Définit les salons de logs, tickets, rôle vérifié, anti-pub, anti-spam." },
+                            { name: "`/settings` (ou `/setting`)", value: "Panneau de configuration visuel, interactif et complet avec onglets et boutons." },
+                            { name: "`/config`", value: "Définit rapidement les salons de logs, tickets, rôle vérifié, anti-pub, anti-spam." },
                             { name: "`/setwelcome`", value: "Configure le message et salon de bienvenue pour les nouveaux." },
                             { name: "`/setbumpchannel`", value: "Définit le salon dédié aux bumps et partenariats." },
                             { name: "`/bump`", value: "Enregistre un bump avec cooldown de 2 heures." },
