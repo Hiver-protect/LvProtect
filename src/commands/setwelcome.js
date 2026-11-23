@@ -11,6 +11,11 @@ module.exports = {
                 .setDescription('Salon de bienvenue')
                 .setRequired(true))
 
+        .addBooleanOption(opt =>
+            opt.setName('actif')
+                .setDescription('Activer ou désactiver le message')
+                .setRequired(true))
+
         .addStringOption(opt =>
             opt.setName('message')
                 .setDescription('Message (utilise {user} {server} {count})')
@@ -18,7 +23,7 @@ module.exports = {
 
         .addBooleanOption(opt =>
             opt.setName('embed')
-                .setDescription('Envoyer en embed')
+                .setDescription('Envoyer sous forme d\'embed')
                 .setRequired(true))
 
         .addStringOption(opt =>
@@ -30,11 +35,6 @@ module.exports = {
             opt.setName('image')
                 .setDescription('Image URL')
                 .setRequired(false))
-
-        .addBooleanOption(opt =>
-            opt.setName('actif')
-                .setDescription('Activer ou désactiver')
-                .setRequired(true))
 
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
