@@ -1,8 +1,8 @@
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config({ path: path.join(process.cwd(), '.env') });
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
-require('dotenv').config();
+require('dotenv').config({ path: path.join(process.cwd(), '.env'), override: true });
+require('dotenv').config({ path: path.join(__dirname, '../.env'), override: true });
+require('dotenv').config({ override: true });
 
 // Normalisation et nettoyage du token (retrait des espaces, retours à la ligne et guillemets)
 let rawToken = (process.env.DISCORD_TOKEN || process.env.TOKEN || process.env.BOT_TOKEN || "").trim();
