@@ -1,4 +1,11 @@
+const path = require('path');
+const fs = require('fs');
+require('dotenv').config({ path: path.join(process.cwd(), '.env') });
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config();
+
+// Normalisation des tokens possibles
+process.env.DISCORD_TOKEN = process.env.DISCORD_TOKEN || process.env.TOKEN || process.env.BOT_TOKEN;
 
 const {
     Client,
@@ -9,14 +16,13 @@ const {
     Events
 } = require('discord.js');
 
-const fs = require('fs');
-const path = require('path');
-
 // =========================
 // 🔐 ENV CHECK
 // =========================
 if (!process.env.DISCORD_TOKEN) {
-    console.error("❌ DISCORD_TOKEN manquant");
+    console.error("❌ DISCORD_TOKEN manquant !");
+    console.error("👉 Créez ou modifiez le fichier .env sur votre panel et ajoutez :");
+    console.error("DISCORD_TOKEN=votre_token_ici");
     process.exit(1);
 }
 
