@@ -28,6 +28,16 @@ module.exports = {
         });
 
         // =========================
+        // 🔄 AUTO-UPDATE EN ARRIÈRE-PLAN
+        // =========================
+        try {
+            const { startAutoUpdate } = require('../modules/auto-update');
+            startAutoUpdate(client);
+        } catch (e) {
+            log(`⚠️ Auto-update non disponible: ${e.message}`);
+        }
+
+        // =========================
         // 🚀 AUTO-DEPLOY SLASH COMMANDS
         // =========================
         log("Initialisation et déploiement automatique des slash commands...");

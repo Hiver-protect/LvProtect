@@ -5,13 +5,13 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('purge')
         .setDescription('🧹 Supprimer rapidement des messages dans le salon')
-        .addIntegerOption(opt => 
+        .addIntegerOption(opt =>
             opt.setName('nombre')
                 .setDescription('Nombre de messages à supprimer (1 à 100)')
                 .setRequired(true)
                 .setMinValue(1)
                 .setMaxValue(100))
-        .addUserOption(opt => 
+        .addUserOption(opt =>
             opt.setName('utilisateur')
                 .setDescription('Supprimer uniquement les messages de cet utilisateur')
                 .setRequired(false))

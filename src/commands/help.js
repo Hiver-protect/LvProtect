@@ -145,6 +145,7 @@ module.exports = {
                         .setColor(0x9b59b6)
                         .setTitle("📊 Système & État du Bot")
                         .addFields(
+                            { name: "`/update`", value: "Force la synchronisation immédiate avec GitHub et redémarre le bot." },
                             { name: "🌐 Serveurs", value: `${client.guilds.cache.size}`, inline: true },
                             { name: "👥 Membres", value: `${client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0)}`, inline: true },
                             { name: "⚡ Ping WebSocket", value: `${client.ws.ping} ms`, inline: true },

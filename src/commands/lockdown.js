@@ -20,8 +20,8 @@ module.exports = {
         const data = store.load();
 
         if (data[guild.id]) {
-            return interaction.editReply({ 
-                content: "⚠️ Un confinement (lockdown) est déjà actif sur ce serveur." 
+            return interaction.editReply({
+                content: "⚠️ Un confinement (lockdown) est déjà actif sur ce serveur."
             });
         }
 
@@ -39,7 +39,7 @@ module.exports = {
             await channel.permissionOverwrites.edit(everyone, {
                 SendMessages: false,
                 AddReactions: false
-            }).catch(() => {});
+            }).catch(() => { });
 
             lockedCount++;
         }
@@ -62,7 +62,7 @@ module.exports = {
 
         const announceChannel = guild.systemChannel || guild.channels.cache.find(c => c.type === ChannelType.GuildText);
         if (announceChannel) {
-            await announceChannel.send({ embeds: [alertEmbed] }).catch(() => {});
+            await announceChannel.send({ embeds: [alertEmbed] }).catch(() => { });
         }
 
         const confirmEmbed = new EmbedBuilder()
