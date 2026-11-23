@@ -5,7 +5,8 @@ const {
     GatewayIntentBits,
     Partials,
     Collection,
-    ActivityType
+    ActivityType,
+    Events
 } = require('discord.js');
 
 const fs = require('fs');
@@ -20,182 +21,242 @@ if (!process.env.DISCORD_TOKEN) {
 }
 
 // =========================
-// 🤖 CLIENT INIT
+// 🤖 CLIENT
 // =========================
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.MessageContent
     ],
-    partials: [
-        Partials.Message,
-        Partials.Channel,
-        Partials.Reaction
-    ]
+    partials: [Partials.Channel, Partials.Message],
+    allowedMentions: { parse: [] }
 });
 
 client.commands = new Collection();
 
 // =========================
-// 📊 LOGGER PRO
+// 📊 LOGGER
 // =========================
 const log = {
-    ok: (m) => console.log(`✔ ${m}`),
-    warn: (m) => console.log(`⚠ ${m}`),
-    err: (m) => console.log(`✖ ${m}`),
-    info: (m) => console.log(`ℹ ${m}`)
+    ok: (m) => console.log(`[✔] ${m}`),
+    warn: (m) => console.warn(`[⚠] ${m}`),
+    err: (m, e) => console.error(`[✖] ${m}`, e || ""),
+    info: (m) => console.log(`[ℹ] ${m}`)
 };
 
 // =========================
-// 📂 LOAD COMMANDS SAFE
+// ♻️ CACHE CLEAN
+// =========================
+const clearRequire = (modulePath) => {
+    delete require.cache[require.resolve(modulePath)];
+};
+
+// =========================
+// 🚨 ANTI DOUBLE EVENTS GLOBAL
+// =========================
+client._loadedEvents = new Set();
+client._intervals = new Set();
+
+// =========================
+// 📂 COMMANDS LOADER
 // =========================
 function loadCommands() {
-    const dir = path.join(__dirname, 'commands');
 
+    const dir = path.join(__dirname, 'commands');
     if (!fs.existsSync(dir)) return log.err("commands/ introuvable");
+
+    client.commands.clear();
 
     const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
 
-    let count = 0;
-
     for (const file of files) {
-        try {
-            const cmd = require(path.join(dir, file));
 
-            if (!cmd?.data?.name || !cmd?.execute) {
+        const filePath = path.join(dir, file);
+
+        try {
+
+            clearRequire(filePath);
+            const cmd = require(filePath);
+
+            if (!cmd?.data?.name || typeof cmd.execute !== "function") {
                 log.warn(`Commande invalide: ${file}`);
                 continue;
             }
 
             client.commands.set(cmd.data.name, cmd);
             log.ok(`Commande: ${cmd.data.name}`);
-            count++;
 
-        } catch (e) {
-            log.err(`Erreur commande ${file}`);
-            console.error(e);
+        } catch (err) {
+            log.err(`Commande crash: ${file}`, err);
         }
     }
 
-    log.info(`${count} commandes chargées`);
+    log.info(`${client.commands.size} commandes chargées`);
 }
 
 // =========================
-// ⚡ LOAD EVENTS SAFE
+// ⚡ EVENTS LOADER (ANTI DUPLICATE)
 // =========================
 function loadEvents() {
-    const dir = path.join(__dirname, 'events');
 
+    const dir = path.join(__dirname, 'events');
     if (!fs.existsSync(dir)) return log.err("events/ introuvable");
 
     const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
 
-    let count = 0;
-
     for (const file of files) {
-        try {
-            const event = require(path.join(dir, file));
 
-            if (!event.name || !event.execute) {
+        const filePath = path.join(dir, file);
+
+        try {
+
+            clearRequire(filePath);
+            const event = require(filePath);
+
+            if (!event.name || typeof event.execute !== "function") {
                 log.warn(`Event invalide: ${file}`);
                 continue;
             }
 
-            const handler = (...args) => event.execute(...args, client);
+            // =========================
+            // 🚫 ANTI DUPLICATE EVENT
+            // =========================
+            if (client._loadedEvents.has(event.name)) {
+                log.warn(`Event ignoré (doublon): ${event.name}`);
+                continue;
+            }
 
-            event.once
-                ? client.once(event.name, handler)
-                : client.on(event.name, handler);
+            client._loadedEvents.add(event.name);
+
+            const handler = async (...args) => {
+                try {
+                    await event.execute(...args, client);
+                } catch (err) {
+                    log.err(`Event crash: ${event.name}`, err);
+                }
+            };
+
+            if (event.once) client.once(event.name, handler);
+            else client.on(event.name, handler);
 
             log.ok(`Event: ${event.name}`);
-            count++;
 
-        } catch (e) {
-            log.err(`Erreur event ${file}`);
-            console.error(e);
+        } catch (err) {
+            log.err(`Event load fail: ${file}`, err);
         }
     }
-
-    log.info(`${count} events chargés`);
 }
 
 // =========================
-// 🎮 STATUS SAFE
+// 🎮 STATUS
 // =========================
-function setStatus() {
-    if (!client.user) return;
+const statusList = [
+    () => `🛡️ Protection active`,
+    () => `👥 ${client.guilds.cache.size} serveurs`,
+    () => `⚡ HiverGuard Online`,
+    () => `/help`
+];
 
-    client.user.setPresence({
-        activities: [{
-            name: "🛡️ En Developement",
-            type: ActivityType.Playing
-        }],
-        status: "online"
-    });
-}
+let i = 0;
+let lastPresence = "";
 
 // =========================
-// 🚀 AUTO DEPLOY FIX (IMPORTANT)
+// 🔥 READY (SAFE)
 // =========================
-async function deployCommands() {
-    try {
-        const deploy = require('./deploy-commands');
+client.once(Events.ClientReady, async () => {
 
-        if (!deploy?.execute) {
-            log.warn("deploy-commands manquant ou invalide");
-            return;
-        }
-
-        await deploy.execute(client);
-
-        log.ok("Slash commands synchronisées");
-
-    } catch (e) {
-        log.warn("Sync commands ignoré");
-        console.error(e);
+    if (client._readyExecuted) {
+        return log.warn("READY ignoré (doublon détecté)");
     }
-}
 
-// =========================
-// 🧠 READY (FIXED V14)
-// =========================
-client.once('ready', async () => {
+    client._readyExecuted = true;
+
     log.ok(`Connecté en tant que ${client.user.tag}`);
 
-    setStatus();
+    // =========================
+    // 🎮 STATUS LOOP SAFE
+    // =========================
+    const statusInterval = setInterval(() => {
 
-    loadCommands();
-    loadEvents();
+        if (!client.user) return;
 
-    await deployCommands();
+        const text = statusList[i]();
+
+        if (text !== lastPresence) {
+            client.user.setPresence({
+                activities: [{ name: text, type: ActivityType.Watching }],
+                status: "online"
+            });
+
+            lastPresence = text;
+        }
+
+        i = (i + 1) % statusList.length;
+
+    }, 60000);
+
+    client._intervals.add(statusInterval);
+
+    // =========================
+    // 📊 LIVE LOG LOOP SAFE
+    // =========================
+    const logInterval = setInterval(() => {
+
+        log.info(
+            `LIVE | ${client.guilds.cache.size} guilds | ${client.users.cache.size} users | ping ${client.ws.ping}ms`
+        );
+
+    }, 60000);
+
+    client._intervals.add(logInterval);
+
+    log.ok(`Serveurs: ${client.guilds.cache.size}`);
+    log.ok(`Users: ${client.users.cache.size}`);
 });
 
 // =========================
-// 🚀 LOGIN SAFE
+// 🧠 ANTI CRASH
 // =========================
-(async () => {
-    try {
-        await client.login(process.env.DISCORD_TOKEN);
-    } catch (err) {
-        log.err("Erreur login bot");
-        console.error(err);
-        process.exit(1);
-    }
-})();
-
-// =========================
-// 🧠 ERROR HANDLING
-// =========================
-process.on('unhandledRejection', (err) => {
-    log.err('Unhandled Rejection');
-    console.error(err);
+process.on("unhandledRejection", (reason) => {
+    log.err("Unhandled Rejection", reason);
 });
 
-process.on('uncaughtException', (err) => {
-    log.err('Uncaught Exception');
-    console.error(err);
+process.on("uncaughtException", (err) => {
+    log.err("Uncaught Exception", err);
+});
+
+// =========================
+// 🔴 RATE LIMIT
+// =========================
+client.rest.on("rateLimited", (info) => {
+    log.warn(`Rate limit: ${info.timeToReset}ms`);
+});
+
+// =========================
+// 🔻 SHUTDOWN CLEAN
+// =========================
+const shutdown = () => {
+
+    log.warn("Arrêt du bot...");
+
+    client._intervals.forEach(clearInterval);
+
+    client.destroy();
+
+    process.exit(0);
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
+// =========================
+// 🚀 BOOTSTRAP AND LOGIN
+// =========================
+loadCommands();
+loadEvents();
+
+client.login(process.env.DISCORD_TOKEN).catch(err => {
+    log.err("Erreur login", err);
 });

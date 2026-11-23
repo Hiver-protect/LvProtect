@@ -12,3 +12,7 @@ npm-debug.log*
 # système
 .DS_Store
 Thumbs.db
+
+# bot state
+statusMessage.json
+status_storage.json

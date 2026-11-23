@@ -1,25 +1,38 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('ticket')
-    .setDescription('Créer un ticket de support'),
+    .setName('ticket-panel')
+    .setDescription('Envoyer le panel de ticket'),
+
   async execute(interaction) {
-    // Crée un ticket (salon privé)
-    const { getConfig } = require('../modules/guildConfig');
-    const config = getConfig(interaction.guild.id);
-    const category = interaction.guild.channels.cache.get(config.ticketCategory);
-    if (!category) return interaction.reply({ content: 'Catégorie tickets introuvable.', ephemeral: true });
-    const channel = await interaction.guild.channels.create({
-      name: `ticket-${interaction.user.username}`,
-      type: 0, // GUILD_TEXT
-      parent: category.id,
-      permissionOverwrites: [
-        { id: interaction.guild.id, deny: ['ViewChannel'] },
-        { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
-      ],
+
+    // 🔒 optionnel : restreindre au staff
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+      return interaction.reply({ content: "❌ Permission refusée", ephemeral: true });
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor(0x5865F2)
+      .setTitle("🎫 Support HiverGuard")
+      .setDescription(
+        "Besoin d'aide ?\n\n" +
+        "Clique sur le bouton ci-dessous pour ouvrir un ticket.\n" +
+        "Un membre du staff te répondra rapidement."
+      )
+      .setFooter({ text: "HiverGuard • Support" });
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("create_ticket")
+        .setLabel("Créer un ticket")
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji("🎫")
+    );
+
+    await interaction.reply({
+      embeds: [embed],
+      components: [row]
     });
-    await channel.send(`Ticket ouvert par <@${interaction.user.id}>. Un membre du staff va vous répondre.`);
-    await interaction.reply({ content: `Ticket créé : ${channel}`, ephemeral: true });
-  },
+  }
 };
