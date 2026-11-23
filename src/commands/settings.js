@@ -13,7 +13,6 @@ const {
 const { getConfig, setConfig, updateConfig } = require('../modules/guildConfig');
 const vEngine = require('../modules/verificationEngine');
 const welcomeConfig = require('../modules/welcomeConfig');
-const bumpConfig = require('../modules/bumpConfig');
 const lockdownStore = require('../modules/lockdownStore');
 
 const THEME_BLUE = '#2B7FFF'; // Bleu électrique propre et moderne
@@ -25,7 +24,6 @@ async function buildSettingsEmbed(guild, tab, client) {
     const config = getConfig(guild.id) || {};
     const vConf = await vEngine.getConfig(guild.id);
     const wConf = welcomeConfig.get(guild.id);
-    const bChan = bumpConfig.getChannel(guild.id);
     const isLockdown = Boolean(lockdownStore.load()[guild.id]);
 
     const embed = new EmbedBuilder()
@@ -92,13 +90,12 @@ async function buildSettingsEmbed(guild, tab, client) {
     } else if (tab === 'utils') {
         embed.setTitle("⚙️ Configuration ➔ 📁 Utilitaires & Support")
             .setDescription(
-                "Modules additionnels : Support par tickets et gestion des bumps.\n\n" +
+                "Modules additionnels : Support par tickets et état du système.\n\n" +
                 "🎫 **Catégorie des Tickets de Support**\n" +
                 `│ ${config.ticketCategory ? `📁 <#${config.ticketCategory}>` : '❌ *Non configurée*'}\n\n` +
-                "🚀 **Salon de Bump Partenaires**\n" +
-                `│ ${bChan ? `<#${bChan}>` : '❌ *Non configuré*'}\n\n` +
                 "📊 **Statut du Bot**\n" +
-                `│ 🟢 En ligne • Ping WebSocket : **${client.ws.ping}ms**`
+                `│ 🟢 En ligne • Ping WebSocket : **${client.ws.ping}ms**\n` +
+                `│ ⏱️ Uptime : <t:${Math.floor(client.readyTimestamp / 1000)}:R>`
             );
     }
 
@@ -218,12 +215,7 @@ function buildActionsRow(tab, config, vConf) {
                 .setCustomId('action_pick_ticket')
                 .setLabel('Catégorie Tickets')
                 .setEmoji('🎫')
-                .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder()
-                .setCustomId('action_pick_bump')
-                .setLabel('Salon Bump')
-                .setEmoji('🚀')
-                .setStyle(ButtonStyle.Secondary)
+                .setStyle(ButtonStyle.Primary)
         );
     }
 
@@ -257,7 +249,7 @@ module.exports = {
     async execute(interaction, client) {
         const guild = interaction.guild;
         let currentTab = 'general';
-        let currentPicker = null; // 'log', 'role', 'welcome', 'ticket', 'bump'
+        let currentPicker = null; // 'log', 'role', 'welcome', 'ticket'
 
         const renderComponents = async () => {
             const config = getConfig(guild.id) || {};
@@ -299,14 +291,6 @@ module.exports = {
                         .setCustomId('picker_select_ticket')
                         .setPlaceholder('📁 Sélectionner la catégorie des tickets...')
                         .setChannelTypes(ChannelType.GuildCategory)
-                );
-                components.push(pickerRow);
-            } else if (currentPicker === 'bump') {
-                const pickerRow = new ActionRowBuilder().addComponents(
-                    new ChannelSelectMenuBuilder()
-                        .setCustomId('picker_select_bump')
-                        .setPlaceholder('🚀 Sélectionner le salon des bumps...')
-                        .setChannelTypes(ChannelType.GuildText)
                 );
                 components.push(pickerRow);
             }
@@ -416,9 +400,6 @@ module.exports = {
             else if (id === 'action_pick_ticket') {
                 currentPicker = currentPicker === 'ticket' ? null : 'ticket';
             }
-            else if (id === 'action_pick_bump') {
-                currentPicker = currentPicker === 'bump' ? null : 'bump';
-            }
 
             // =========================
             // 4. RÉCEPTION DU CHOIX DES SÉLECTEURS
@@ -443,11 +424,6 @@ module.exports = {
             else if (id === 'picker_select_ticket' && i.values?.length) {
                 const categoryId = i.values[0];
                 updateConfig(guild.id, 'ticketCategory', categoryId);
-                currentPicker = null;
-            }
-            else if (id === 'picker_select_bump' && i.values?.length) {
-                const channelId = i.values[0];
-                bumpConfig.setChannel(guild.id, channelId);
                 currentPicker = null;
             }
 

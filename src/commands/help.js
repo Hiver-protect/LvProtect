@@ -22,9 +22,8 @@ module.exports = {
             .addFields(
                 { name: "🛡️ Sécurité & Anti-Raid", value: "Anti-bot, anti-pub, anti-mass join, captcha", inline: true },
                 { name: "🔨 Modération", value: "Ban, kick, mute, unmute, warn, purge", inline: true },
-                { name: "🎫 Support & Tickets", value: "Création, fermeture, logs de tickets", inline: true },
-                { name: "⚙️ Configuration", value: "Salons de logs, bienvenue, rôles", inline: true },
-                { name: "🚀 Partenariats (Bump)", value: "Système de bump automatique et cooldown", inline: true },
+                { name: "🎫 Support & Tickets", value: "Panneau de tickets privé et transcripts", inline: true },
+                { name: "⚙️ Configuration", value: "Panneau /settings interactif, bienvenue, embeds", inline: true },
                 { name: "📊 Statistiques", value: `${client.guilds.cache.size} serveurs protégés`, inline: true }
             )
             .setThumbnail(client.user.displayAvatarURL())
@@ -120,9 +119,8 @@ module.exports = {
                         .setColor(0x3498db)
                         .setTitle("🎫 Système de Tickets")
                         .addFields(
-                            { name: "`/ticket-panel`", value: "Envoie l'embed avec bouton pour ouvrir un ticket." },
-                            { name: "`/ticket <close|add|remove|claim>`", value: "Gère les options avancées du ticket en cours." },
-                            { name: "📁 Transcripts automatiques", value: "Sauvegarde complète de la discussion lors de la fermeture." }
+                            { name: "`/ticket-panel`", value: "Envoie l'embed avec bouton pour permettre aux membres d'ouvrir un ticket." },
+                            { name: "📁 Transcripts automatiques", value: "Sauvegarde complète de la discussion lors de la fermeture d'un ticket." }
                         );
                     break;
 
@@ -131,11 +129,8 @@ module.exports = {
                         .setColor(0x2ecc71)
                         .setTitle("⚙️ Configuration & Utilitaires")
                         .addFields(
-                            { name: "`/settings` (ou `/setting`)", value: "Panneau de configuration visuel, interactif et complet avec onglets et boutons." },
-                            { name: "`/config`", value: "Définit rapidement les salons de logs, tickets, rôle vérifié, anti-pub, anti-spam." },
-                            { name: "`/setwelcome`", value: "Configure le message et salon de bienvenue pour les nouveaux." },
-                            { name: "`/setbumpchannel`", value: "Définit le salon dédié aux bumps et partenariats." },
-                            { name: "`/bump`", value: "Enregistre un bump avec cooldown de 2 heures." },
+                            { name: "`/settings`", value: "Panneau de configuration visuel, interactif et complet (onglets et sélecteurs)." },
+                            { name: "`/setwelcome`", value: "Configure le message et salon de bienvenue pour les nouveaux membres." },
                             { name: "`/embed`", value: "Créateur visuel d'embeds personnalisés complets." }
                         );
                     break;
