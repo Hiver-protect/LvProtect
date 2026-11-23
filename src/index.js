@@ -4,8 +4,10 @@ require('dotenv').config({ path: path.join(process.cwd(), '.env') });
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config();
 
-// Normalisation des tokens possibles
-process.env.DISCORD_TOKEN = process.env.DISCORD_TOKEN || process.env.TOKEN || process.env.BOT_TOKEN;
+// Normalisation et nettoyage du token (retrait des espaces, retours à la ligne et guillemets)
+let rawToken = (process.env.DISCORD_TOKEN || process.env.TOKEN || process.env.BOT_TOKEN || "").trim();
+rawToken = rawToken.replace(/^["']|["']$/g, '').trim();
+process.env.DISCORD_TOKEN = rawToken;
 
 const {
     Client,
@@ -19,10 +21,18 @@ const {
 // =========================
 // 🔐 ENV CHECK
 // =========================
-if (!process.env.DISCORD_TOKEN) {
-    console.error("❌ DISCORD_TOKEN manquant !");
-    console.error("👉 Créez ou modifiez le fichier .env sur votre panel et ajoutez :");
-    console.error("DISCORD_TOKEN=votre_token_ici");
+if (!rawToken || rawToken === "ton_token_discord" || rawToken === "METS_TON_TOKEN_DISCORD_ICI") {
+    console.error("❌ ERREUR TOKEN : Aucun vrai token Discord n'est configuré !");
+    console.error("👉 Valeur actuelle reçue : '" + rawToken + "'");
+    console.error("👉 Rendez-vous sur https://discord.com/developers/applications -> Votre Bot -> 'Reset Token' -> Copiez le token.");
+    process.exit(1);
+}
+
+if (!rawToken.includes('.') || rawToken.length < 50) {
+    console.error("❌ ERREUR TOKEN : Le token semble invalide ou incomplet !");
+    console.error(`👉 Valeur détectée (${rawToken.length} caractères) : ${rawToken.substring(0, 8)}...`);
+    console.error("👉 Un vrai token Discord fait environ 70 caractères et contient des points (ex: MTI... .G... . ...)");
+    console.error("👉 Attention à ne pas mettre le Client Secret ou la Public Key à la place du Bot Token !");
     process.exit(1);
 }
 
