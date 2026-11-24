@@ -77,15 +77,23 @@ async function buildSettingsEmbed(guild, tab, client) {
     } else if (tab === 'moderation') {
         embed.setTitle("⚙️ Configuration ➔ 📁 Modération")
             .setDescription(
-                "Paramètres de gestion des sanctions et sécurité administrative.\n\n" +
-                "⚠️ **Paliers de Sanctions Automatiques (/warn)**\n" +
+                "Toutes les sanctions sont centralisées dans la commande **/moderation** :\n\n" +
+                "🔨 **Commandes disponibles :**\n" +
+                "│ • `/moderation ban` • Bannissement avec raison et log\n" +
+                "│ • `/moderation kick` • Expulsion directe\n" +
+                "│ • `/moderation mute` • Sourdine (1m, 5m, 1h, 1j, 1semaine)\n" +
+                "│ • `/moderation unmute` • Levée de sourdine\n" +
+                "│ • `/moderation warn` • Avertissement avec paliers auto\n" +
+                "│ • `/moderation warns` • Voir les warns d'un membre\n" +
+                "│ • `/moderation clearwarns` • Effacer les warns\n" +
+                "│ • `/moderation purge` • Nettoyage rapide de salon\n" +
+                "│ • `/moderation lockdown` / `unlock` • Confinement d'urgence\n\n" +
+                "⚠️ **Paliers de Sanctions Automatiques :**\n" +
                 "│ • **3 warns** ➔ Timeout 10 minutes\n" +
                 "│ • **5 warns** ➔ Timeout 1 heure\n" +
                 "│ • **7 warns** ➔ Expulsion automatique\n\n" +
                 "🔒 **Confinement d'urgence (Lockdown)**\n" +
-                `│ ${isLockdown ? '🚨 **LOCKDOWN EN COURS (Salons fermés)**' : '✅ **Serveur accessible normalement**'}\n\n` +
-                "🛡️ **Protection de la Hiérarchie**\n" +
-                "│ ✅ **Activée** (Interdiction de sanctionner le staff ou supérieur)"
+                `│ ${isLockdown ? '🚨 **LOCKDOWN EN COURS (Salons fermés)**' : '✅ **Serveur accessible normalement**'}`
             );
     } else if (tab === 'utils') {
         embed.setTitle("⚙️ Configuration ➔ 📁 Utilitaires & Support")
