@@ -23,7 +23,7 @@ module.exports = {
 
         // Présence Discord
         client.user.setPresence({
-            activities: [{ name: `/setting • LvProtect Sécurité`, type: ActivityType.Watching }],
+            activities: [{ name: `/setting • Sécurité & Protection`, type: ActivityType.Watching }],
             status: 'online'
         });
 

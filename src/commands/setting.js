@@ -17,7 +17,7 @@ const lockdownStore = require('../modules/lockdownStore');
 
 const THEME_BLUE = '#5865F2'; // Bleu officiel Discord / Blurple
 const SUPPORT_URL = "https://discord.gg/MtdhG6JAf8";
-const DOCS_URL = "https://github.com/Hiver-protect/LvProtect";
+const DOCS_URL = "https://discord.gg/MtdhG6JAf8";
 
 /**
  * Construit l'embed avec la structure exacte de l'image de référence
@@ -29,8 +29,8 @@ async function buildSettingsEmbed(guild, tab, client) {
     const isLockdown = Boolean(lockdownStore.load()[guild.id]);
 
     const header = 
-        `LvProtect v2.0\n\n` +
-        `Les réglages de RaidProtect pour ce serveur. Pour commencer, regardez **Arrivées** (captcha, anti-raid) et **Modération** (salon de logs, sanctions).\n` +
+        `Protection v3.6.1\n\n` +
+        `Les réglages de protection pour ce serveur. Pour commencer, regardez **Arrivées** (captcha, anti-raid) et **Modération** (salon de logs, sanctions).\n` +
         `Tout changement s'applique immédiatement.\n\n`;
 
     const embed = new EmbedBuilder()
@@ -476,10 +476,10 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setColor(THEME_BLUE)
-                            .setTitle("📕 Changelog • RaidProtect / LvProtect")
+                            .setTitle("📕 Changelog • Système de Sécurité")
                             .setDescription(
-                                "• **Panneau /setting** : Réplique exacte du modèle RaidProtect.\n" +
-                                "• **Boutons bleus de modification** pour chaque réglage.\n" +
+                                "• **Panneau /setting** : Interface de configuration complète.\n" +
+                                "• **Boutons de modification** pour chaque réglage.\n" +
                                 "• **Sélecteurs intégrés** en direct.\n" +
                                 "• **Zéro doublon de commande**."
                             )

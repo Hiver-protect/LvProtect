@@ -1,6 +1,6 @@
 /**
  * @file antiraid.js
- * @description Moteur de sécurité Anti-Raid, Anti-Bot et Anti-Spam de pointe pour HiverGuard / LvProtect.
+ * @description Moteur de sécurité Anti-Raid, Anti-Bot et Anti-Spam de pointe.
  */
 
 const { 
