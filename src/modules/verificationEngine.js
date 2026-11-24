@@ -87,7 +87,7 @@ module.exports = {
         if (!config.roleId) {
             if (channelOrInteraction?.reply) {
                 return channelOrInteraction.reply({
-                    content: "❌ Le système de vérification n'est pas encore configuré (rôle manquant). Un administrateur doit utiliser `/config` ou `/verify-setup`.",
+                    content: "❌ Le système de vérification n'est pas encore configuré (rôle manquant). Un administrateur doit utiliser `/setting`.",
                     ephemeral: true
                 });
             }
@@ -101,7 +101,7 @@ module.exports = {
             .setDescription(`Bienvenue sur **${member.guild.name}** !\n\nPour obtenir l'accès aux salons, clique sur le bouton ci-dessous et saisis le code de sécurité :\n\n# \`${captcha}\`\n\n*(Ce code est sensible à la casse)*`)
             .setColor('#5865F2')
             .setThumbnail(member.guild.iconURL({ dynamic: true }))
-            .setFooter({ text: 'HiverGuard Security System' })
+            .setFooter({ text: 'Système de Sécurité & Vérification' })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(

@@ -20,7 +20,7 @@ module.exports = {
             )
             .setThumbnail(guild.iconURL({ dynamic: true }) || null)
             .setTimestamp()
-            .setFooter({ text: "HiverGuard Logs System" });
+            .setFooter({ text: "Système de Sécurité • Logs" });
 
         channel.send({ embeds: [embed] }).catch(() => {});
     }

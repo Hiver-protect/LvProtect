@@ -4,7 +4,7 @@ const path = require('path');
 const os = require('os');
 
 /**
- * HIVERGUARD DASHBOARD - ULTIMATE PRO VERSION
+ * SÉCURITÉ & MONITORING DASHBOARD - PRO VERSION
  * Système de monitoring haute performance avec auto-récupération.
  */
 
@@ -48,7 +48,7 @@ module.exports = {
             log(`❌ Erreur auto-déploiement : ${e.message}`);
         }
 
-        log("Démarrage du monitoring HiverGuard...");
+        log("Démarrage du monitoring du système...");
 
         // =========================
         // 🛠️ OUTILS DE MESURE
@@ -141,7 +141,7 @@ module.exports = {
                 lastUpdateHash = currentHash;
 
                 const embed = new EmbedBuilder()
-                    .setTitle("🛡️ HiverGuard • System Monitoring")
+                    .setTitle("🛡️ Monitoring du Système")
                     .setThumbnail(client.user.displayAvatarURL({ dynamic: true }))
                     .setColor(ping < 100 ? 0x00FF7F : 0xFFAA00)
                     .setDescription(`**État du système :** \`OPÉRATIONNEL\`\n**Dernière actualisation :** <t:${Math.floor(Date.now()/1000)}:T>`)
@@ -167,7 +167,7 @@ module.exports = {
                             inline: false 
                         }
                     )
-                    .setFooter({ text: `HiverGuard Engine • Host: ${os.hostname()}`, iconURL: client.user.displayAvatarURL() })
+                    .setFooter({ text: `Système de Protection • Host: ${os.hostname()}`, iconURL: client.user.displayAvatarURL() })
                     .setTimestamp();
 
                 if (!statusMessage) {

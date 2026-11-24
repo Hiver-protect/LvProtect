@@ -22,7 +22,7 @@ module.exports = {
             // 2. Préparation de l'Embed pour l'Owner (DM)
             const dmEmbed = new EmbedBuilder()
                 .setColor(0x5865F2)
-                .setTitle("❄️ HiverGuard • Activation réussie")
+                .setTitle("🛡️ Protection • Activation réussie")
                 .setThumbnail(icon)
                 .setDescription(
                     `👋 Merci d'avoir ajouté **${client.user.username}** sur ton serveur !\n\n` +
@@ -47,7 +47,7 @@ module.exports = {
                         inline: true
                     }
                 )
-                .setFooter({ text: "HiverGuard Security Core", iconURL: client.user.displayAvatarURL() })
+                .setFooter({ text: "Système de Sécurité & Protection", iconURL: client.user.displayAvatarURL() })
                 .setTimestamp();
 
             // Envoi du DM à l'Owner
@@ -87,7 +87,7 @@ module.exports = {
                 if (canSend) {
                     const welcomeEmbed = new EmbedBuilder()
                         .setColor(0x5865F2)
-                        .setTitle("🛡️ HiverGuard est prêt !")
+                        .setTitle("🛡️ Système de Protection prêt !")
                         .setDescription(
                             `Bonjour à tous ! Merci de m'avoir invité.\n\n` +
                             `• Utilisez **/setting** pour configurer la sécurité et les options\n\n` +

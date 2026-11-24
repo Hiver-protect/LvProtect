@@ -92,7 +92,7 @@ async function handleBotAdd(member, client) {
                 )
                 .setThumbnail(member.user.displayAvatarURL())
                 .setTimestamp()
-                .setFooter({ text: "HiverGuard • Protection Anti-Bot", iconURL: client.user.displayAvatarURL() });
+                .setFooter({ text: "Protection • Système Anti-Bot", iconURL: client.user.displayAvatarURL() });
 
             await sendSecurityLog(guild, alertEmbed, client);
             return true;
@@ -135,7 +135,7 @@ async function handleMemberJoin(member, client) {
 
         // Sanctionner les comptes suspects arrivant pendant le raid
         if (isVeryYoung && member.moderatable) {
-            await member.timeout(60 * 60 * 1000, "🚨 Anti-Raid HiverGuard : Compte récent pendant un raid").catch(() => {});
+            await member.timeout(60 * 60 * 1000, "🚨 Anti-Raid : Compte récent pendant un raid").catch(() => {});
             actionTaken = "Timeout 1h (compte < 24h)";
         }
 
@@ -149,7 +149,7 @@ async function handleMemberJoin(member, client) {
                 { name: "🛡️ Mesure prise", value: actionTaken, inline: true }
             )
             .setTimestamp()
-            .setFooter({ text: "HiverGuard • Système Anti-Raid Actif" });
+            .setFooter({ text: "Protection • Système Anti-Raid" });
 
         await sendSecurityLog(guild, raidEmbed, client);
     }
@@ -262,7 +262,7 @@ async function handleMessageSecurity(message, client) {
 
     if (score >= 6) {
         if (member.moderatable) {
-            await member.timeout(2 * 60 * 1000, "Anti-spam HiverGuard").catch(() => {});
+            await member.timeout(2 * 60 * 1000, "Anti-Spam : Envoi excessif").catch(() => {});
         }
 
         const warnAlert = await message.channel.send({

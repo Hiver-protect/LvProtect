@@ -94,7 +94,7 @@ module.exports = {
                     `🔒 **Fermer** : Clôturer proprement le ticket.\n` +
                     `📂 **Logs** : Télécharger la transcription du ticket.`
                 )
-                .setFooter({ text: "HiverGuard Engine • Système de Support", iconURL: client.user.displayAvatarURL() })
+                .setFooter({ text: "Système de Support & Tickets", iconURL: client.user.displayAvatarURL() })
                 .setTimestamp();
 
             const row = new ActionRowBuilder().addComponents(
@@ -339,7 +339,7 @@ module.exports = {
 
         transcript += `\n========================================================\n`;
         transcript += `Fin de la transcription (limite: ${limit} messages).\n`;
-        transcript += `HiverGuard Engine • Lv Creations\n`;
+        transcript += `Système de Support & Sécurité\n`;
         transcript += `========================================================\n`;
 
         return transcript;
