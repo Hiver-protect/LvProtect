@@ -116,14 +116,29 @@ module.exports = {
             console.log("✅ Deploy GUILD instant OK");
 
           } else {
-            console.log("🌍 GLOBAL MODE");
+            console.log("🌍 GLOBAL MODE → Déploiement global...");
 
             await rest.put(
               Routes.applicationCommands(CLIENT_ID),
               { body: commands }
             );
 
-            console.log("✅ Deploy GLOBAL OK (delay Discord)");
+            console.log("✅ Deploy GLOBAL OK");
+
+            // ⚡ SYNCHRONISATION EN TEMPS RÉEL (Instantanée sur tous les serveurs actifs du bot)
+            console.log(`⚡ Synchronisation en temps réel sur ${client.guilds.cache.size} serveur(s)...`);
+            for (const guild of client.guilds.cache.values()) {
+              try {
+                await rest.put(
+                  Routes.applicationGuildCommands(CLIENT_ID, guild.id),
+                  { body: commands }
+                );
+                console.log(`✔ Sync instantanée sur : ${guild.name} (${guild.id})`);
+              } catch (gErr) {
+                console.log(`⚠️ Skip sync guild ${guild.id}: ${gErr.message}`);
+              }
+            }
+            console.log("⚡ Toutes les commandes sont actives immédiatement en temps réel !");
           }
 
           // 💾 SAVE HASH

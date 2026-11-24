@@ -7,7 +7,7 @@ const execAsync = promisify(exec);
 
 const CONFIG = {
     enabled: process.env.AUTO_UPDATE !== 'false',
-    interval: parseInt(process.env.AUTO_UPDATE_INTERVAL || '60000'), // Vérifie toutes les 60 secondes
+    interval: parseInt(process.env.AUTO_UPDATE_INTERVAL || '30000'), // Vérifie toutes les 30 secondes en temps réel
     branch: process.env.GITHUB_BRANCH || 'main',
     forceReset: true,
     npmInstall: true

@@ -33,7 +33,7 @@ module.exports = {
                 .addFields(
                     {
                         name: "🚀 Démarrage rapide",
-                        value: "• `/config setup` pour tout configurer\n• `/logs` pour définir un salon de logs\n• `/antiraid` pour la sécurité",
+                        value: "• `/setting` pour configurer le bot via le panneau interactif",
                         inline: false
                     },
                     {
@@ -90,14 +90,21 @@ module.exports = {
                         .setTitle("🛡️ HiverGuard est prêt !")
                         .setDescription(
                             `Bonjour à tous ! Merci de m'avoir invité.\n\n` +
-                            `• Utilisez **/help** pour voir mes commandes\n` +
-                            `• Les administrateurs peuvent lancer **/config setup**\n\n` +
+                            `• Utilisez **/setting** pour configurer la sécurité et les options\n\n` +
                             `🔧 **Support :** [Cliquez ici](${SUPPORT_URL})`
                         )
                         .setFooter({ text: "Sécurité & Modération" });
 
                     await systemChannel.send({ embeds: [welcomeEmbed] }).catch(() => {});
                 }
+            }
+
+            // 5. Déploiement instantané des commandes sur le serveur
+            try {
+                const deployer = require('../deploy-commands');
+                await deployer.execute(client);
+            } catch (e) {
+                log(`Erreur sync instantanée: ${e.message}`);
             }
 
             log(`Serveur rejoint: ${guild.name} (${guild.id})`);
