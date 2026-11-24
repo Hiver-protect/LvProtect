@@ -289,7 +289,7 @@ function buildBottomRow() {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setting')
-        .setDescription('⚙️ Configuration interactive de LvProtect (Style RaidProtect)')
+        .setDescription('Configuration et réglages du serveur')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     async execute(interaction, client) {

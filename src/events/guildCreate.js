@@ -99,12 +99,18 @@ module.exports = {
                 }
             }
 
-            // 5. Déploiement instantané des commandes sur le serveur
+            // 5. Nettoyage anti-doublon sur le nouveau serveur
             try {
-                const deployer = require('../deploy-commands');
-                await deployer.execute(client);
+                const CLIENT_ID = process.env.CLIENT_ID || client.application?.id;
+                const TOKEN = process.env.DISCORD_TOKEN;
+                const GUILD_ID = process.env.GUILD_ID;
+                if (!GUILD_ID && CLIENT_ID && TOKEN) {
+                    const { REST, Routes } = require('discord.js');
+                    const rest = new REST({ version: '10' }).setToken(TOKEN);
+                    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guild.id), { body: [] }).catch(() => {});
+                }
             } catch (e) {
-                log(`Erreur sync instantanée: ${e.message}`);
+                log(`Erreur sync anti-doublon: ${e.message}`);
             }
 
             log(`Serveur rejoint: ${guild.name} (${guild.id})`);

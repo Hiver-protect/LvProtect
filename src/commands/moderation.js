@@ -39,85 +39,85 @@ function saveWarns(data) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('moderation')
-        .setDescription('🛡️ Centre de modération avancé de LvProtect')
+        .setDescription('Commandes de modération du serveur')
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         
         // --- 1. BAN ---
         .addSubcommand(sub =>
             sub.setName('ban')
-                .setDescription('🔨 Bannir un membre du serveur')
+                .setDescription('Bannir un membre du serveur')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre à bannir').setRequired(true))
-                .addStringOption(opt => opt.setName('raison').setDescription('Raison du bannissement').setRequired(false)))
+                .addStringOption(opt => opt.setName('raison').setDescription('Raison de la sanction').setRequired(false)))
 
         // --- 2. KICK ---
         .addSubcommand(sub =>
             sub.setName('kick')
-                .setDescription('👢 Expulser un membre du serveur')
+                .setDescription('Expulser un membre du serveur')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre à expulser').setRequired(true))
-                .addStringOption(opt => opt.setName('raison').setDescription('Raison de l\'expulsion').setRequired(false)))
+                .addStringOption(opt => opt.setName('raison').setDescription('Raison de la sanction').setRequired(false)))
 
         // --- 3. MUTE ---
         .addSubcommand(sub =>
             sub.setName('mute')
-                .setDescription('🔇 Mettre un membre en sourdine (Timeout)')
+                .setDescription('Mettre un membre en sourdine')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre à sanctionner').setRequired(true))
                 .addIntegerOption(opt => 
                     opt.setName('duree')
                         .setDescription('Durée de la mise en sourdine')
                         .setRequired(true)
                         .addChoices(
-                            { name: '1 Minute', value: 1 },
-                            { name: '5 Minutes', value: 5 },
-                            { name: '10 Minutes', value: 10 },
-                            { name: '1 Heure', value: 60 },
-                            { name: '1 Jour', value: 1440 },
-                            { name: '1 Semaine', value: 10080 }
+                            { name: '1 minute', value: 1 },
+                            { name: '5 minutes', value: 5 },
+                            { name: '10 minutes', value: 10 },
+                            { name: '1 heure', value: 60 },
+                            { name: '1 jour', value: 1440 },
+                            { name: '1 semaine', value: 10080 }
                         ))
-                .addStringOption(opt => opt.setName('raison').setDescription('Raison du mute').setRequired(false)))
+                .addStringOption(opt => opt.setName('raison').setDescription('Raison de la sanction').setRequired(false)))
 
         // --- 4. UNMUTE ---
         .addSubcommand(sub =>
             sub.setName('unmute')
-                .setDescription('🔊 Rétablir la parole d\'un membre')
+                .setDescription('Rétablir la parole d\'un membre')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre à rétablir').setRequired(true))
                 .addStringOption(opt => opt.setName('raison').setDescription('Raison de la levée').setRequired(false)))
 
         // --- 5. WARN ---
         .addSubcommand(sub =>
             sub.setName('warn')
-                .setDescription('⚠️ Avertir un membre avec paliers automatiques')
+                .setDescription('Avertir un membre')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre à avertir').setRequired(true))
-                .addStringOption(opt => opt.setName('raison').setDescription('Raison du warn').setRequired(false)))
+                .addStringOption(opt => opt.setName('raison').setDescription('Raison de l\'avertissement').setRequired(false)))
 
         // --- 6. WARNS (LIST) ---
         .addSubcommand(sub =>
             sub.setName('warns')
-                .setDescription('📋 Consulter les avertissements d\'un membre')
+                .setDescription('Afficher les avertissements d\'un membre')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre concerné').setRequired(true)))
 
         // --- 7. CLEARWARNS ---
         .addSubcommand(sub =>
             sub.setName('clearwarns')
-                .setDescription('🧹 Effacer tous les avertissements d\'un membre')
+                .setDescription('Effacer les avertissements d\'un membre')
                 .addUserOption(opt => opt.setName('membre').setDescription('Membre concerné').setRequired(true)))
 
         // --- 8. PURGE ---
         .addSubcommand(sub =>
             sub.setName('purge')
-                .setDescription('🧹 Supprimer rapidement des messages récents')
+                .setDescription('Supprimer des messages récents')
                 .addIntegerOption(opt => opt.setName('nombre').setDescription('Nombre de messages (1-100)').setRequired(true).setMinValue(1).setMaxValue(100))
                 .addUserOption(opt => opt.setName('utilisateur').setDescription('Filtrer par utilisateur').setRequired(false)))
 
         // --- 9. LOCKDOWN ---
         .addSubcommand(sub =>
             sub.setName('lockdown')
-                .setDescription('🔒 Verrouiller immédiatement tous les salons texte')
+                .setDescription('Verrouiller les salons du serveur')
                 .addStringOption(opt => opt.setName('raison').setDescription('Raison du confinement').setRequired(false)))
 
         // --- 10. UNLOCK ---
         .addSubcommand(sub =>
             sub.setName('unlock')
-                .setDescription('🔓 Déverrouiller le serveur et rétablir les salons')),
+                .setDescription('Déverrouiller les salons du serveur')),
 
     async execute(interaction, client) {
         const sub = interaction.options.getSubcommand();

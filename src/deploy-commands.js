@@ -133,13 +133,21 @@ module.exports = {
             console.log(`✅ ${commands.length} commande(s) globale(s) enregistrée(s).`);
 
             // 2. Nettoyage absolu des anciennes commandes de guilde (Supprime définitivement les doublons)
-            for (const guild of client.guilds.cache.values()) {
+            let guilds = [];
+            try {
+              const fetchedGuilds = await client.guilds.fetch();
+              guilds = Array.from(fetchedGuilds.values());
+            } catch {
+              guilds = Array.from(client.guilds.cache.values());
+            }
+
+            for (const guild of guilds) {
               try {
                 await rest.put(
                   Routes.applicationGuildCommands(CLIENT_ID, guild.id),
                   { body: [] }
                 );
-                console.log(`🧹 Doublons purgés sur le serveur : ${guild.name} (${guild.id})`);
+                console.log(`🧹 Doublons purgés sur le serveur : ${guild.name || guild.id} (${guild.id})`);
               } catch (gErr) {
                 // Ignore silencieux
               }
