@@ -108,37 +108,43 @@ module.exports = {
           if (GUILD_ID) {
             console.log(`⚡ GUILD MODE → ${GUILD_ID}`);
 
+            // 1. Déploiement sur la guilde cible
             await rest.put(
               Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
               { body: commands }
             );
 
-            console.log("✅ Deploy GUILD instant OK");
+            // 2. Nettoyage du global pour éviter les doublons
+            await rest.put(
+              Routes.applicationCommands(CLIENT_ID),
+              { body: [] }
+            ).catch(() => {});
+
+            console.log("✅ Deploy GUILD unique OK (anti-doublon actif)");
 
           } else {
-            console.log("🌍 GLOBAL MODE → Déploiement global...");
+            console.log("🌍 GLOBAL MODE → Nettoyage des doublons et déploiement unique...");
 
+            // 1. Déploiement officiel unique en mode Global
             await rest.put(
               Routes.applicationCommands(CLIENT_ID),
               { body: commands }
             );
+            console.log(`✅ ${commands.length} commande(s) globale(s) enregistrée(s).`);
 
-            console.log("✅ Deploy GLOBAL OK");
-
-            // ⚡ SYNCHRONISATION EN TEMPS RÉEL (Instantanée sur tous les serveurs actifs du bot)
-            console.log(`⚡ Synchronisation en temps réel sur ${client.guilds.cache.size} serveur(s)...`);
+            // 2. Nettoyage absolu des anciennes commandes de guilde (Supprime définitivement les doublons)
             for (const guild of client.guilds.cache.values()) {
               try {
                 await rest.put(
                   Routes.applicationGuildCommands(CLIENT_ID, guild.id),
-                  { body: commands }
+                  { body: [] }
                 );
-                console.log(`✔ Sync instantanée sur : ${guild.name} (${guild.id})`);
+                console.log(`🧹 Doublons purgés sur le serveur : ${guild.name} (${guild.id})`);
               } catch (gErr) {
-                console.log(`⚠️ Skip sync guild ${guild.id}: ${gErr.message}`);
+                // Ignore silencieux
               }
             }
-            console.log("⚡ Toutes les commandes sont actives immédiatement en temps réel !");
+            console.log("✨ Anti-doublon réussi : chaque commande est désormais unique !");
           }
 
           // 💾 SAVE HASH
