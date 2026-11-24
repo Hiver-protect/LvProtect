@@ -242,7 +242,7 @@ function buildBottomRow() {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('settings')
+        .setName('setting')
         .setDescription('⚙️ Panneau de configuration interactif et avancé de LvProtect')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
