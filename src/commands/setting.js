@@ -15,10 +15,12 @@ const vEngine = require('../modules/verificationEngine');
 const welcomeConfig = require('../modules/welcomeConfig');
 const lockdownStore = require('../modules/lockdownStore');
 
-const THEME_BLUE = '#2B7FFF'; // Bleu électrique propre et moderne
+const THEME_BLUE = '#2B7FFF'; // Bleu Discord épuré et propre
+const SUPPORT_URL = "https://discord.gg/MtdhG6JAf8";
+const DOCS_URL = "https://github.com/Hiver-protect/LvProtect";
 
 /**
- * Génère l'embed correspondant à l'onglet sélectionné
+ * Génère l'embed avec la mise en page propre et aérée du modèle RaidProtect
  */
 async function buildSettingsEmbed(guild, tab, client) {
     const config = getConfig(guild.id) || {};
@@ -26,92 +28,103 @@ async function buildSettingsEmbed(guild, tab, client) {
     const wConf = welcomeConfig.get(guild.id);
     const isLockdown = Boolean(lockdownStore.load()[guild.id]);
 
+    const header = 
+        `*LvProtect v2.0*\n\n` +
+        `Les réglages de **LvProtect** pour ce serveur. Pour commencer, regardez **Arrivées** (captcha, anti-raid) et **Modération** (salon de logs, sanctions).\n` +
+        `Tout changement s'applique immédiatement.\n\n` +
+        `────────────────────────────────────────\n\n`;
+
     const embed = new EmbedBuilder()
         .setColor(THEME_BLUE)
+        .setTitle("⚙️ Configuration")
         .setThumbnail(guild.iconURL({ dynamic: true }))
-        .setFooter({ text: "LvProtect v2.0 • Les modifications s'appliquent immédiatement", iconURL: client.user.displayAvatarURL() })
-        .setTimestamp();
+        .setFooter({ text: "LvProtect • Système de protection en temps réel", iconURL: client.user.displayAvatarURL() });
 
     if (tab === 'general') {
-        embed.setTitle("⚙️ Configuration ➔ 📁 Général")
-            .setDescription(
-                "Les réglages généraux de **LvProtect** pour ce serveur.\n" +
-                "Configurez ici le salon où le bot enregistre les événements de sécurité et les alertes.\n\n" +
-                "📜 **Salon de logs de sécurité**\n" +
-                `│ ${config.logChannel ? `<#${config.logChannel}>` : '❌ *Non configuré*'}\n\n` +
-                "🔔 **Alertes Staff & Raids**\n" +
-                `│ ${config.staffAlerts !== false ? '✅ **Activé** (Notification immédiate)' : '❌ **Désactivé**'}\n\n` +
-                "🌐 **Langue du système**\n" +
-                "│ 🇫🇷 **Français** (Prise en charge native)\n\n" +
-                "🕒 **Fuseau horaire**\n" +
-                "│ ⏰ **Europe/Paris (UTC+1)**"
-            );
+        const logText = config.logChannel ? `<#${config.logChannel}>` : "Désactivé";
+        const alertsText = config.staffAlerts !== false ? "Activé · Notification instantanée" : "Désactivé";
+
+        embed.setDescription(
+            header +
+            `📜 **Salon de logs**\n` +
+            `│ ${logText}\n\n` +
+            `🔔 **Alertes Staff**\n` +
+            `│ ${alertsText}\n\n` +
+            `🔑 **Permissions**\n` +
+            `│ Intégrations : commandes slash seules\n\n` +
+            `🕒 **Fuseau horaire**\n` +
+            `│ Europe/Paris (UTC+1)`
+        );
     } else if (tab === 'arrivals') {
-        embed.setTitle("⚙️ Configuration ➔ 📁 Arrivées")
-            .setDescription(
-                "Gérez la sécurité des nouveaux arrivants et la vérification des comptes.\n\n" +
-                "🛡️ **Système de Vérification Captcha**\n" +
-                `│ ${vConf.enabled ? '✅ **Activé** (Bouton & Modal interactif)' : '❌ **Désactivé**'}\n\n` +
-                "✅ **Rôle Membre Vérifié**\n" +
-                `│ ${vConf.roleId ? `<@&${vConf.roleId}>` : '❌ *Non configuré (Obligatoire pour le captcha)*'}\n\n` +
-                "👋 **Message de Bienvenue**\n" +
-                `│ ${wConf?.channelId ? `<#${wConf.channelId}> • *${wConf.message ? 'Personnalisé' : 'Standard'}*` : '❌ *Désactivé*'}\n\n` +
-                "⏳ **Âge minimum du compte**\n" +
-                `│ ${config.minAccountAgeDays || 0} jour(s) *(Comptes plus récents surveillés)*`
-            );
+        const captchaText = vConf.enabled ? "Activé · Bouton & modal sans MP" : "Désactivé";
+        const roleText = vConf.roleId ? `<@&${vConf.roleId}>` : "Non configuré";
+        const welcomeText = wConf?.channelId ? `<#${wConf.channelId}> · ${wConf.message ? 'Personnalisé' : 'Standard'}` : "Désactivé";
+        const minAgeText = `${config.minAccountAgeDays || 0} jour(s) · Surveillance nouveaux comptes`;
+
+        embed.setDescription(
+            header +
+            `🛡️ **Captcha à l'arrivée**\n` +
+            `│ ${captchaText}\n\n` +
+            `✅ **Rôle vérifié**\n` +
+            `│ ${roleText}\n\n` +
+            `👋 **Message de bienvenue**\n` +
+            `│ ${welcomeText}\n\n` +
+            `⏳ **Âge minimum du compte**\n` +
+            `│ ${minAgeText}`
+        );
     } else if (tab === 'protection') {
-        embed.setTitle("⚙️ Configuration ➔ 📁 Protection & Anti-Raid")
-            .setDescription(
-                "Les modules de défense active pour protéger votre serveur en temps réel.\n\n" +
-                "🚨 **Détection Anti-Raid (Mass-Join)**\n" +
-                `│ ${config.antiRaid !== false ? '✅ **Activé** (Seuil: 6 arrivées / 15s)' : '❌ **Désactivé**'}\n\n` +
-                "🤖 **Anti-Bot Rogue non autorisé**\n" +
-                `│ ${config.antiBot !== false ? '✅ **Activé** (Expulsion immédiate des bots suspects)' : '❌ **Désactivé**'}\n\n` +
-                "🔗 **Anti-Pub & Liens d'invitation**\n" +
-                `│ ${config.antiLink !== false ? '✅ **Activé** (Suppression auto des invitations discord.gg)' : '❌ **Désactivé**'}\n\n` +
-                "📢 **Anti-Mass Mentions (@everyone)**\n" +
-                `│ ${config.antiMention !== false ? '✅ **Activé** (Timeout 10m en cas d\'abus de pings)' : '❌ **Désactivé**'}\n\n` +
-                "💬 **Anti-Spam & Flood intelligent**\n" +
-                `│ ${config.antiSpam !== false ? '✅ **Activé** (Détection par répétition et burst)' : '❌ **Désactivé**'}`
-            );
+        const raidText = config.antiRaid !== false ? "Activé · Détection 6 arrivées / 15s" : "Désactivé";
+        const botText = config.antiBot !== false ? "Activé · Expulsion auto des bots non autorisés" : "Désactivé";
+        const linkText = config.antiLink !== false ? "Activé · Suppression auto des invitations" : "Désactivé";
+        const mentionText = config.antiMention !== false ? "Activé · Timeout 10m en cas d'abus @everyone" : "Désactivé";
+        const spamText = config.antiSpam !== false ? "Activé · Détection par rafale & flood" : "Désactivé";
+
+        embed.setDescription(
+            header +
+            `🚨 **Mode Anti-Raid**\n` +
+            `│ ${raidText}\n\n` +
+            `🤖 **Anti-Bot Rogue**\n` +
+            `│ ${botText}\n\n` +
+            `🔗 **Anti-Pub & Liens**\n` +
+            `│ ${linkText}\n\n` +
+            `📢 **Anti-Mass Mentions**\n` +
+            `│ ${mentionText}\n\n` +
+            `💬 **Anti-Spam intelligent**\n` +
+            `│ ${spamText}`
+        );
     } else if (tab === 'moderation') {
-        embed.setTitle("⚙️ Configuration ➔ 📁 Modération")
-            .setDescription(
-                "Toutes les sanctions sont centralisées dans la commande **/moderation** :\n\n" +
-                "🔨 **Commandes disponibles :**\n" +
-                "│ • `/moderation ban` • Bannissement avec raison et log\n" +
-                "│ • `/moderation kick` • Expulsion directe\n" +
-                "│ • `/moderation mute` • Sourdine (1m, 5m, 1h, 1j, 1semaine)\n" +
-                "│ • `/moderation unmute` • Levée de sourdine\n" +
-                "│ • `/moderation warn` • Avertissement avec paliers auto\n" +
-                "│ • `/moderation warns` • Voir les warns d'un membre\n" +
-                "│ • `/moderation clearwarns` • Effacer les warns\n" +
-                "│ • `/moderation purge` • Nettoyage rapide de salon\n" +
-                "│ • `/moderation lockdown` / `unlock` • Confinement d'urgence\n\n" +
-                "⚠️ **Paliers de Sanctions Automatiques :**\n" +
-                "│ • **3 warns** ➔ Timeout 10 minutes\n" +
-                "│ • **5 warns** ➔ Timeout 1 heure\n" +
-                "│ • **7 warns** ➔ Expulsion automatique\n\n" +
-                "🔒 **Confinement d'urgence (Lockdown)**\n" +
-                `│ ${isLockdown ? '🚨 **LOCKDOWN EN COURS (Salons fermés)**' : '✅ **Serveur accessible normalement**'}`
-            );
+        const lockText = isLockdown ? "🚨 Verrouillé · Salons fermés" : "✅ Accessible · Serveur ouvert";
+
+        embed.setDescription(
+            header +
+            `⚠️ **Sanctions automatiques (/moderation)**\n` +
+            `│ 3 avertissements ➔ Timeout 10m\n` +
+            `│ 5 avertissements ➔ Timeout 1h\n` +
+            `│ 7 avertissements ➔ Expulsion\n\n` +
+            `🔒 **Confinement d'urgence (Lockdown)**\n` +
+            `│ ${lockText}\n\n` +
+            `🛡️ **Protection hiérarchie**\n` +
+            `│ Activée · Interdiction de sanctionner le personnel`
+        );
     } else if (tab === 'utils') {
-        embed.setTitle("⚙️ Configuration ➔ 📁 Utilitaires & Support")
-            .setDescription(
-                "Modules additionnels : Support par tickets et état du système.\n\n" +
-                "🎫 **Catégorie des Tickets de Support**\n" +
-                `│ ${config.ticketCategory ? `📁 <#${config.ticketCategory}>` : '❌ *Non configurée*'}\n\n` +
-                "📊 **Statut du Bot**\n" +
-                `│ 🟢 En ligne • Ping WebSocket : **${client.ws.ping}ms**\n` +
-                `│ ⏱️ Uptime : <t:${Math.floor(client.readyTimestamp / 1000)}:R>`
-            );
+        const ticketText = config.ticketCategory ? `📁 <#${config.ticketCategory}>` : "Non configurée";
+
+        embed.setDescription(
+            header +
+            `🎫 **Catégorie des tickets**\n` +
+            `│ ${ticketText}\n\n` +
+            `📊 **Statut du système**\n` +
+            `│ Opérationnel · Ping WebSocket : ${client.ws.ping}ms\n\n` +
+            `⏱️ **Disponibilité (Uptime)**\n` +
+            `│ <t:${Math.floor(client.readyTimestamp / 1000)}:R>`
+        );
     }
 
     return embed;
 }
 
 /**
- * Construit la barre d'onglets (5 boutons)
+ * Construit la rangée d'onglets (5 boutons)
  */
 function buildTabsRow(activeTab) {
     return new ActionRowBuilder().addComponents(
@@ -144,7 +157,7 @@ function buildTabsRow(activeTab) {
 }
 
 /**
- * Construit les boutons d'actions spécifiques à chaque onglet
+ * Construit les boutons d'action bleus pour chaque onglet
  */
 function buildActionsRow(tab, config, vConf) {
     const row = new ActionRowBuilder();
@@ -160,7 +173,7 @@ function buildActionsRow(tab, config, vConf) {
                 .setCustomId('action_toggle_alerts')
                 .setLabel(config.staffAlerts !== false ? 'Désactiver Alertes' : 'Activer Alertes')
                 .setEmoji('🔔')
-                .setStyle(config.staffAlerts !== false ? ButtonStyle.Danger : ButtonStyle.Success)
+                .setStyle(ButtonStyle.Primary)
         );
     } else if (tab === 'arrivals') {
         row.addComponents(
@@ -168,17 +181,17 @@ function buildActionsRow(tab, config, vConf) {
                 .setCustomId('action_toggle_captcha')
                 .setLabel(vConf.enabled ? 'Désactiver Captcha' : 'Activer Captcha')
                 .setEmoji('🛡️')
-                .setStyle(vConf.enabled ? ButtonStyle.Danger : ButtonStyle.Success),
+                .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_pick_role')
-                .setLabel('Choisir Rôle Vérifié')
+                .setLabel('Modifier Rôle')
                 .setEmoji('✅')
                 .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_pick_welcome')
-                .setLabel('Salon Bienvenue')
+                .setLabel('Modifier Bienvenue')
                 .setEmoji('👋')
-                .setStyle(ButtonStyle.Secondary)
+                .setStyle(ButtonStyle.Primary)
         );
     } else if (tab === 'protection') {
         row.addComponents(
@@ -186,22 +199,22 @@ function buildActionsRow(tab, config, vConf) {
                 .setCustomId('action_toggle_antilink')
                 .setLabel(`Anti-Pub: ${config.antiLink !== false ? 'ON' : 'OFF'}`)
                 .setEmoji('🔗')
-                .setStyle(config.antiLink !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+                .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_toggle_antispam')
                 .setLabel(`Anti-Spam: ${config.antiSpam !== false ? 'ON' : 'OFF'}`)
                 .setEmoji('💬')
-                .setStyle(config.antiSpam !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+                .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_toggle_antibot')
                 .setLabel(`Anti-Bot: ${config.antiBot !== false ? 'ON' : 'OFF'}`)
                 .setEmoji('🤖')
-                .setStyle(config.antiBot !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+                .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_toggle_antiraid')
                 .setLabel(`Anti-Raid: ${config.antiRaid !== false ? 'ON' : 'OFF'}`)
                 .setEmoji('🚨')
-                .setStyle(config.antiRaid !== false ? ButtonStyle.Success : ButtonStyle.Secondary)
+                .setStyle(ButtonStyle.Primary)
         );
     } else if (tab === 'moderation') {
         const isLockdown = Boolean(lockdownStore.load()[config.guildId || '']);
@@ -210,18 +223,18 @@ function buildActionsRow(tab, config, vConf) {
                 .setCustomId('action_toggle_lockdown')
                 .setLabel(isLockdown ? 'Lever le Lockdown' : 'Déclencher Lockdown')
                 .setEmoji('🔒')
-                .setStyle(isLockdown ? ButtonStyle.Success : ButtonStyle.Danger),
+                .setStyle(isLockdown ? ButtonStyle.Success : ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId('action_warn_paliers')
-                .setLabel('Infos Paliers Warns')
+                .setLabel('Infos Paliers')
                 .setEmoji('⚠️')
-                .setStyle(ButtonStyle.Secondary)
+                .setStyle(ButtonStyle.Primary)
         );
     } else if (tab === 'utils') {
         row.addComponents(
             new ButtonBuilder()
                 .setCustomId('action_pick_ticket')
-                .setLabel('Catégorie Tickets')
+                .setLabel('Modifier Catégorie Tickets')
                 .setEmoji('🎫')
                 .setStyle(ButtonStyle.Primary)
         );
@@ -231,19 +244,29 @@ function buildActionsRow(tab, config, vConf) {
 }
 
 /**
- * Ligne d'outils du bas (Changelog, Actualiser, etc.)
+ * Construit la rangée du bas (Serveur Support, Documentation, Personnaliser)
  */
 function buildBottomRow() {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
+            .setLabel('Serveur Support')
+            .setEmoji('💬')
+            .setStyle(ButtonStyle.Link)
+            .setURL(SUPPORT_URL),
+        new ButtonBuilder()
+            .setLabel('Documentation')
+            .setEmoji('📖')
+            .setStyle(ButtonStyle.Link)
+            .setURL(DOCS_URL),
+        new ButtonBuilder()
             .setCustomId('btn_changelog')
-            .setLabel('Changelog v2.0')
+            .setLabel('Changelog')
             .setEmoji('📕')
             .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId('btn_refresh')
-            .setLabel('Actualiser')
-            .setEmoji('🔄')
+            .setLabel('Personnaliser')
+            .setEmoji('✨')
             .setStyle(ButtonStyle.Primary)
     );
 }
@@ -269,7 +292,7 @@ module.exports = {
                 buildActionsRow(currentTab, config, vConf)
             ];
 
-            // Si un sélecteur natif Discord est actif
+            // Sélecteur natif Discord si activé
             if (currentPicker === 'log') {
                 const pickerRow = new ActionRowBuilder().addComponents(
                     new ChannelSelectMenuBuilder()
@@ -316,7 +339,6 @@ module.exports = {
             ephemeral: true
         });
 
-        // Collecteur de 15 minutes pour toute interaction
         const collector = reply.createMessageComponentCollector({
             time: 15 * 60 * 1000
         });
@@ -329,13 +351,13 @@ module.exports = {
             const id = i.customId;
 
             // =========================
-            // 1. CHANGEMENT D'ONGLET
+            // 1. NAVIGATION ONGLETS
             // =========================
-            if (id === 'set_tab_general') currentTab = 'general';
-            else if (id === 'set_tab_arrivals') currentTab = 'arrivals';
-            else if (id === 'set_tab_protection') currentTab = 'protection';
-            else if (id === 'set_tab_moderation') currentTab = 'moderation';
-            else if (id === 'set_tab_utils') currentTab = 'utils';
+            if (id === 'set_tab_general') { currentTab = 'general'; currentPicker = null; }
+            else if (id === 'set_tab_arrivals') { currentTab = 'arrivals'; currentPicker = null; }
+            else if (id === 'set_tab_protection') { currentTab = 'protection'; currentPicker = null; }
+            else if (id === 'set_tab_moderation') { currentTab = 'moderation'; currentPicker = null; }
+            else if (id === 'set_tab_utils') { currentTab = 'utils'; currentPicker = null; }
 
             // =========================
             // 2. TOGGLES & ACTIONS RAPIDES
@@ -366,14 +388,13 @@ module.exports = {
             }
             else if (id === 'action_warn_paliers') {
                 return i.reply({
-                    content: "📋 **Paliers du système /warn :**\n• 3 warns ➔ Timeout 10m\n• 5 warns ➔ Timeout 1h\n• 7 warns ➔ Expulsion automatique\n*Toutes les sanctions sont appliquées et enregistrées automatiquement.*",
+                    content: "📋 **Paliers du système /moderation warn :**\n• 3 warns ➔ Timeout 10m\n• 5 warns ➔ Timeout 1h\n• 7 warns ➔ Expulsion automatique\n*Toutes les sanctions sont appliquées et enregistrées automatiquement.*",
                     ephemeral: true
                 });
             }
             else if (id === 'action_toggle_lockdown') {
                 const data = lockdownStore.load();
                 if (data[guild.id]) {
-                    // Unlock
                     for (const channel of guild.channels.cache.values()) {
                         if (channel.type === ChannelType.GuildText) {
                             await channel.permissionOverwrites.edit(guild.roles.everyone, { SendMessages: null }).catch(() => {});
@@ -382,7 +403,6 @@ module.exports = {
                     delete data[guild.id];
                     lockdownStore.save(data);
                 } else {
-                    // Lock
                     data[guild.id] = {};
                     for (const channel of guild.channels.cache.values()) {
                         if (channel.type === ChannelType.GuildText) {
@@ -394,7 +414,7 @@ module.exports = {
             }
 
             // =========================
-            // 3. ACTIVATION DES SÉLECTEURS
+            // 3. ACTIVATION SÉLECTEURS
             // =========================
             else if (id === 'action_pick_log') {
                 currentPicker = currentPicker === 'log' ? null : 'log';
@@ -410,7 +430,7 @@ module.exports = {
             }
 
             // =========================
-            // 4. RÉCEPTION DU CHOIX DES SÉLECTEURS
+            // 4. RÉCEPTION DU CHOIX
             // =========================
             else if (id === 'picker_select_log' && i.values?.length) {
                 const channelId = i.values[0];
@@ -446,12 +466,10 @@ module.exports = {
                             .setTitle("📕 Changelog • LvProtect v2.0")
                             .setDescription(
                                 "🚀 **Dernières nouveautés :**\n" +
-                                "• **Panneau /settings interactif** avec onglets et sélecteurs natifs.\n" +
-                                "• **Anti-Bot Rogue** : Bannissement / expulsion des bots non autorisés.\n" +
-                                "• **Anti-Raid Mass Join** : Détection intelligente d'arrivées massives.\n" +
-                                "• **Vérification In-Server** : Plus besoin des DMs pour se vérifier.\n" +
-                                "• **Paliers de Warns** : Sanctions automatiques progressives.\n" +
-                                "• **Audit Logs systématiques** sur toutes les commandes de modération."
+                                "• **Panneau /setting** : Design épuré, aéré et moderne en bleu.\n" +
+                                "• **Commandes sans doublon** : Purge automatique des doublons sur Discord.\n" +
+                                "• **Commande /moderation unifiée** : Ban, kick, mute, unmute, warn, purge, lockdown.\n" +
+                                "• **Mises à jour en temps réel (30s)** : Synchronisation continue avec GitHub."
                             )
                             .setTimestamp()
                     ],
@@ -459,7 +477,7 @@ module.exports = {
                 });
             }
 
-            // Mise à jour visuelle immédiate
+            // Mise à jour visuelle fluide
             const updatedEmbed = await buildSettingsEmbed(guild, currentTab, client);
             const updatedComponents = await renderComponents();
 
